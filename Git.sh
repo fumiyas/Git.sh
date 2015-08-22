@@ -150,6 +150,14 @@ Shit_ReadStructFromHexLines()
 
 ## ======================================================================
 
+Shit_init()
+{
+  mkdir .git || exit 1
+  mkdir .git/objects || exit 1
+  mkdir .git/refs || exit 1
+  echo -E 'ref: refs/heads/master' >.git/HEAD || exit 1
+}
+
 Shit_ls_files()
 {
   local dirc
