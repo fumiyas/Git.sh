@@ -76,7 +76,7 @@ Shit_ReadIntegerFromHexLines()
     let "n = (n << 8) + 0x$b"
   done
 
-  echo "$n"
+  echo -E "$n"
   return 0
 }
 
@@ -91,7 +91,7 @@ Shit_ReadStringFromHexLines()
     read -r b || return 1
     [[ $b == "00" ]] && eos=set
     [[ -n $eos ]] && continue
-    s="$s$(printf '\x'"$b")"
+    s="$s$(echo -ne '\x'"$b")"
   done
 
   echo -E "$s"
@@ -160,6 +160,38 @@ Shit_init()
 
 Shit_ls_files()
 {
+  local opt
+  local stage_p=
+
+  while [[ $# -gt 0 ]]; do
+    opt="$1"; shift
+
+    if [[ -z "${opt##-[!-]?*}" ]]; then
+      set -- "-${opt#??}" ${1+"$@"}
+      opt="${opt%${1#-}}"
+    fi
+    if [[ -z "${opt##--*=*}" ]]; then
+      set -- "${opt#--*=}" ${1+"$@"}
+      opt="${opt%%=*}"
+    fi
+
+    case "$opt" in
+    -s|--stage)
+      stage_p="set"
+      ;;
+    --)
+      break
+      ;;
+    -*)
+      Shit_Die "Invalid option: $opt"
+      ;;
+    *)
+      set -- "$opt" ${1+"$@"}
+      break
+      ;;
+    esac
+  done
+
   local dirc
   local version
   local entries
@@ -181,13 +213,21 @@ Shit_ls_files()
       ))
       Shit_ReadIntegerFromHexLines "$padding" >/dev/null
 
-      echo "${index_entry[name]}"
+      if [[ -n $stage_p ]]; then
+	printf '%o %s 0\t%s\n' \
+	  "${index_entry[mode]}" \
+	  "${index_entry[sha1]}" \
+	  "${index_entry[name]}" \
+	;
+      else
+	echo -E "${index_entry[name]}"
+      fi
     done
   }
 }
 
 if [[ ${#BASH_SOURCE[@]} -eq 1 ]]; then
-  cmd_name="${1//-/_}"
+  cmd_name="${1//-/_}"; shift
   if ! type "Shit_$cmd_name" >/dev/null 2>&1; then
     Shit_Die "Invalid command: $cmd_name"
   fi
