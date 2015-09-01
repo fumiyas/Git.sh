@@ -8,7 +8,15 @@
 
 set -u
 set -o pipefail
-shopt -s lastpipe
+
+if [[ -n ${BASH_VERSION-} ]]; then
+  shopt -s lastpipe
+elif [[ -n ${ZSH_VERSION-} ]]; then
+  setopt SH_WORD_SPLIT
+  setopt BSD_ECHO
+  setopt KSH_GLOB
+  setopt KSH_ARRAYS
+fi
 
 Shit_GitDir=".git"
 ## FIXME: ?
@@ -81,7 +89,7 @@ Shit_HexStdin()
 
 Shit_ReadIntegerFromHexLines()
 {
-  local size="${1-Shit_IntSize}"; shift
+  local size="${1-Shit_IntSize}"; ${1+shift}
   local n=0
   local i
   local b
@@ -242,7 +250,10 @@ Shit_ls_files()
   }
 }
 
-if [[ ${#BASH_SOURCE[@]} -eq 1 ]]; then
+if [[ \
+    -n ${BASH_VERSION-} && ${#BASH_SOURCE[@]-0} -eq 1 || \
+    -n ${ZSH_VERSION-} && ${zsh_eval_context-} == toplevel \
+  ]]; then
   cmd_name="${1//-/_}"; shift
   if ! type "Shit_$cmd_name" >/dev/null 2>&1; then
     Shit_Die "Invalid command: $cmd_name"

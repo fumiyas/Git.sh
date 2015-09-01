@@ -14,7 +14,7 @@ Yet another Git implementation written in bash.
 Requirements
 ---------------------------------------------------------------------
 
-  * `bash`(1)
+  * `bash`(1) 3.0+ or `zsh`(1) 5.0+
   * some external commands
 
 How to install
