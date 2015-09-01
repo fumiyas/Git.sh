@@ -52,6 +52,22 @@ Shit_Debug()
   echo -E "DEBUG: $*" 1>&2
 }
 
+Shit_Zlib_InflateStdin()
+{
+  Shit_Die "Shit_Zlib_InflateStdin() not implemented"
+}
+
+Shit_Zlib_DeflateStdin()
+{
+  ## FIXME: How to fix "gzip: stdin: unexpected end of file" error?
+  (
+    echo -ne '\x1f\x8b\x08\x00\x00\x00\x00\x00'
+    cat -
+  ) \
+  |gzip -dc 2>/dev/null \
+  ;
+}
+
 Shit_HexStdin()
 {
   od -tx1 \
