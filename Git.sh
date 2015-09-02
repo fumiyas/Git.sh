@@ -18,19 +18,23 @@ elif [[ -n ${ZSH_VERSION-} ]]; then
   setopt KSH_ARRAYS
 fi
 
-Shit_GitDir=".git"
+SHIT_EXIT_OK=0
+SHIT_EXIT_ERROR=1
+SHIT_EXIT_USAGE=129
+
+SHIT_GITDIR=".git"
 ## FIXME: ?
-Shit_IntSize=4
+SHIT_INTSIZE=4
 
-typeset -A Shit_Struct
+typeset -A SHIT_STRUCT
 
-Shit_Struct[index_header]="
+SHIT_STRUCT[index_header]="
   dirc:string:4
   version:int
   entries:int
 "
 
-Shit_Struct[index_entry]="
+SHIT_STRUCT[index_entry]="
   ctime_sec:int
   ctime_nsec:int
   mtime_sec:int
@@ -51,7 +55,7 @@ Shit_Struct[index_entry]="
 Shit_Die()
 {
   echo -E "ERROR: $*" 1>&2
-  exit ${2-1}
+  exit ${2-$SHIT_EXIT_ERROR}
 }
 
 Shit_Debug()
@@ -89,7 +93,7 @@ Shit_HexStdin()
 
 Shit_ReadIntegerFromHexLines()
 {
-  local size="${1-Shit_IntSize}"; ${1+shift}
+  local size="${1-SHIT_INTSIZE}"; ${1+shift}
   local n=0
   local i
   local b
@@ -145,7 +149,7 @@ Shit_ReadStructFromHexLines()
   local m_size
   local m_value
 
-  for m_desc in ${Shit_Struct[$s_type]}; do
+  for m_desc in ${SHIT_STRUCT[$s_type]}; do
     m_name="${m_desc%%:*}"
     m_type="${m_desc#*:}"
 
@@ -176,10 +180,10 @@ Shit_ReadStructFromHexLines()
 
 Shit_init()
 {
-  mkdir .git || exit 1
-  mkdir .git/objects || exit 1
-  mkdir .git/refs || exit 1
-  echo -E 'ref: refs/heads/master' >.git/HEAD || exit 1
+  mkdir .git || exit $SHIT_EXIT_ERROR
+  mkdir .git/objects || exit $SHIT_EXIT_ERROR
+  mkdir .git/refs || exit $SHIT_EXIT_ERROR
+  echo -E 'ref: refs/heads/master' >.git/HEAD || exit $SHIT_EXIT_ERROR
 }
 
 Shit_ls_files()
@@ -207,7 +211,7 @@ Shit_ls_files()
       break
       ;;
     -*)
-      Shit_Die "Invalid option: $opt"
+      Shit_Die "Unknown option: $opt" $SHIT_EXIT_USAGE
       ;;
     *)
       set -- "$opt" ${1+"$@"}
@@ -221,7 +225,7 @@ Shit_ls_files()
   local entries
   local i
 
-  Shit_HexStdin <"$Shit_GitDir/index" \
+  Shit_HexStdin <"$SHIT_GITDIR/index" \
   |{
     typeset -A index_header index_entry
     Shit_ReadStructFromHexLines index_header
@@ -248,6 +252,8 @@ Shit_ls_files()
       fi
     done
   }
+
+  return $SHIT_EXIT_OK
 }
 
 if [[ \
@@ -259,5 +265,6 @@ if [[ \
     Shit_Die "Invalid command: $cmd_name"
   fi
   "Shit_$cmd_name" "$@"
+  exit $?
 fi
 
