@@ -261,7 +261,7 @@ if [[ \
     -n ${ZSH_VERSION-} && ${zsh_eval_context-} == toplevel \
   ]]; then
   cmd_name="${1//-/_}"; shift
-  if ! type "Shit_$cmd_name" >/dev/null 2>&1; then
+  if ! PATH= type "Shit_$cmd_name" >/dev/null 2>&1; then
     Shit_Die "Invalid command: $cmd_name"
   fi
   "Shit_$cmd_name" "$@"
