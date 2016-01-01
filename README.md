@@ -36,3 +36,8 @@ Inspired by
     * http://www.slideshare.net/DQNEO/git-yapcasia-2015-dqneo
     * https://github.com/DQNEO/minigit
 
+Memo
+---------------------------------------------------------------------
+
+  * Bash/Zsh スクリプトならバイナリを扱える。さて何をしよう…… - Qiita
+    * http://qiita.com/akinomyoga/items/215faa630508ffc6e6e0
